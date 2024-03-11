@@ -1,0 +1,19 @@
+{
+  "server": {
+    "port": "PORT",
+    "host": "HOST"
+  },
+  "db": {
+    "mongodb": {
+      "uri": "MONGO_URI",
+      "mongooseOptions": {
+        "dbName": "MONGO_DBNAME",
+        "user": "MONGO_USER",
+        "pass": "MONGO_PASS"
+      }
+    }
+  },
+  "jwt": {
+    "secret": "JWT_SECRET"
+  }
+}
