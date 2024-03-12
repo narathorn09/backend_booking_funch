@@ -1,5 +1,7 @@
 import { Router } from 'express'
-import { createUser, getUsers, register, login } from "../controller/userController.js"
+import { createUser, getUsers } from "../controller/userController.js"
+import { register, login } from "../controller/authController.js"
+
 const router = Router()
 
 router.route('/user')
