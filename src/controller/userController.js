@@ -16,7 +16,7 @@ export const createUser = async (req, res, next) => {
 export const getUsers = async (req, res, next) => {
   try {
     const users = await UserModel.find();
-    res.status(201).json({ data: users });
+    res.status(200).json({ data: users });
   } catch (error) {
     res.status(400).json(error.message);
   }
