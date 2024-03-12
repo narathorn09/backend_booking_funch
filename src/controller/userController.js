@@ -48,3 +48,26 @@ export const register = async (req, res) => {
     ResponseError(error, res);
   }
 };
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // find user by email
+    const user = await UserModel.findOne({ email });
+
+    // check password
+    if (!user || user.password !== password) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+
+    res.status(200).json({
+      status: 200,
+      code: "SUCCESS_LOGIN",
+      message: "Login Success.",
+    });
+    
+  } catch (error) {
+    ResponseError(error, res);
+  }
+};
