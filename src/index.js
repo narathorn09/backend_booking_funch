@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import config from "config";
 import { createServer } from "http";
-import { connectToMongoDB } from "./db-config/database-config.js";
+import { connectToMongoDB } from "./database/mongoDB.js";
 import router from './route/router.js';
 
 const app = express();
