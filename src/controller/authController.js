@@ -1,8 +1,19 @@
 import bcrypt from "bcrypt";
 import config from "config";
+import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
-import UserModel from "../models/user.js";
+import UserModel from "../models/userModel.js";
 import ResponseError from "../components/responseError.js";
+import { sendVerifyEmail } from "../utils/sendVerifyEmail.js";
+
+const privateKey = config.get("jwt.secret");
+
+const generateToken = (data, privateKey) => {
+  const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), privateKey)
+    .toString()
+    .replace(/\+/g, ""); // Replace all "+" characters with an empty string
+  return ciphertext;
+};
 
 export const register = async (req, res) => {
   try {
@@ -20,16 +31,24 @@ export const register = async (req, res) => {
     // hash password with bcrypt
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // create new user
-    const newUser = new UserModel({
+    // user data
+    const userData = {
       firstName: firstName,
       lastName: lastName,
       email: email,
       password: passwordHash,
-    });
+    };
+
+    const token = generateToken(userData, privateKey);
+
+    // create new user
+    const newUser = new UserModel({ ...userData, emailToken: token });
 
     // save user into mongoDB
     const respone = await newUser.save();
+
+    // send notification email
+    sendVerifyEmail(newUser);
 
     if (respone) {
       res.status(201).json({
@@ -45,7 +64,6 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const privateKey = config.get("jwt.secret");
 
     // find user by email
     const user = await UserModel.findOne({ email });
@@ -55,6 +73,13 @@ export const login = async (req, res) => {
       return res.status(401).json({
         status: 401,
         message: "Invalid username or password",
+      });
+    }
+
+    if (!user.isVerify) {
+      return res.status(401).json({
+        status: 401,
+        message: "email is not verified!",
       });
     }
 
@@ -73,7 +98,7 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       { email: email, firstName: user.firstName, lastName: user.lastName },
       privateKey,
-      { expiresIn: "10m" }
+      { expiresIn: "1d" }
     );
 
     res.status(200).json({
@@ -84,4 +109,35 @@ export const login = async (req, res) => {
   } catch (error) {
     ResponseError(error, res);
   }
+};
+
+export const verifyEmail = async (req, res) => {
+  try {
+    const { emailToken } = req.body;
+
+    if (!emailToken) {
+      return res.status(404).json({ status: 404, message: "Email not found." });
+    }
+
+    const user = await UserModel.findOne({
+      emailToken: JSON.parse(emailToken),
+    });
+
+    if (user) {
+      // user.emailToken = null;
+      user.isVerify = true;
+
+      await user.save();
+
+      return res.status(200).json({
+        status: 200,
+        message: "Verify success.",
+        verify: user?.isVerify,
+      });
+    } else {
+      return res
+        .status(404)
+        .json({ status: 404, message: "Verify error, invalid token." });
+    }
+  } catch (error) {}
 };

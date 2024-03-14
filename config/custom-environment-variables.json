@@ -3,6 +3,9 @@
     "port": "PORT",
     "host": "HOST"
   },
+  "client": {
+    "url": "CLIENT_URL"
+  },
   "db": {
     "mongodb": {
       "uri": "MONGO_URI",
@@ -15,5 +18,9 @@
   },
   "jwt": {
     "secret": "JWT_SECRET"
+  },
+  "smtp": {
+    "email": "EMAIL_TRANSPORT",
+    "password": "EMAIL_TRANSPORT_PASSWORD"
   }
 }
