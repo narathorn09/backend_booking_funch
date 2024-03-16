@@ -25,7 +25,7 @@ export const register = async (req, res) => {
 
     // check user and send response error when user duplicates email
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "Email already exists. Please use another one." });
     }
 
     // hash password with bcrypt
@@ -133,6 +133,7 @@ export const verifyEmail = async (req, res) => {
         status: 200,
         message: "Verify success.",
         verify: user?.isVerify,
+        email: user?.email
       });
     } else {
       return res
