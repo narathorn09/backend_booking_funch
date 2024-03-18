@@ -2,27 +2,24 @@ import express from "express";
 import cors from "cors";
 import config from "config";
 import { createServer } from "http";
-import { connectToMongoDB } from "./db-config/database-config.js";
-import { createUser } from "./controller/userController.js"
-const app = express();
-connectToMongoDB();
+import { connectToMongoDB } from "./database/mongoDB.js";
+import { corsOptions } from "./middleware/corsOptions.js";
+import { credentials } from "./middleware/credentials.js";
+import router from './route/router.js';
 
+const app = express();
 const port = config.get("server.port");
 
-app.use(cors());
-app.use(express.json({ limit: "100mb" }));
+// connect MongoDB
+connectToMongoDB();
+
+app.use(credentials);
+app.use(cors(corsOptions));
+app.use(express.json({ limit: "30mb" }));
+app.use('/api/', router);
 
 app.get("/", (req, res) => {
   res.send("Hello from Express.js server!!");
-});
-
-app.post("/users", async (req, res) => {
-  try {
-    const newUser = await createUser(req.body)
-    res.status(201).send(newUser);
-  } catch (error) {
-    res.status(400).send(error.message);
-  }
 });
 
 const httpServer = createServer(app);
