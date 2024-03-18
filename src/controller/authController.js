@@ -25,7 +25,9 @@ export const register = async (req, res) => {
 
     // check user and send response error when user duplicates email
     if (existingUser) {
-      return res.status(400).json({ message: "Email already exists. Please use another one." });
+      return res
+        .status(400)
+        .json({ message: "Email already exists. Please use another one." });
     }
 
     // hash password with bcrypt
@@ -96,7 +98,12 @@ export const login = async (req, res) => {
 
     // use jwt for gen token with playoad and privateKey
     const token = jwt.sign(
-      { email: email, firstName: user.firstName, lastName: user.lastName },
+      {
+        id: user._id,
+        email: email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
       privateKey,
       { expiresIn: "1d" }
     );
@@ -133,12 +140,14 @@ export const verifyEmail = async (req, res) => {
         status: 200,
         message: "Verify success.",
         verify: user?.isVerify,
-        email: user?.email
+        email: user?.email,
       });
     } else {
       return res
         .status(404)
         .json({ status: 404, message: "Verify error, invalid token." });
     }
-  } catch (error) {}
+  } catch (error) {
+    ResponseError(error, res);
+  }
 };
